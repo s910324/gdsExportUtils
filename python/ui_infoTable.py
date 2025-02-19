@@ -5,7 +5,7 @@ class InfoTableWidget(pya.QTableWidget):
     def __init__(self, data = [], headers = [], parent = None):
         super(InfoTableWidget, self).__init__(parent)
         self.setEditTriggers(pya.QAbstractItemView.NoEditTriggers)
-        self.setSelectionBehavior(pya.QAbstractItemView.SelectRows)
+        self.setSelectionBehavior(pya.QAbstractItemView.SelectItems)
         self.data    = data
         self.headers = headers
         self.setData(data, headers)

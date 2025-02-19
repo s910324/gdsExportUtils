@@ -21,7 +21,7 @@ class HeaderSelItem(pya.QWidget):
             "Cell name", 
             "Cell width", 
             "Cell height",            
-            
+            "Cell size (W x H)",
             "Cell XLB", 
             "Cell YLB", 
             "Cell XRT", 

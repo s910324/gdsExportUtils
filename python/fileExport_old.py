@@ -26,31 +26,22 @@ class CellExport(object):
         if expLid:
             for lid in layout.layer_indexes():
                 if not(lid in expLid) : layout.clear_layer(lid)
-    
-    def mergeLayers(self, layers = {}):
+                
+    def flatCellMergeLayer(self, layers = []):
         self.filterLayers(layers)
         self.flatten()
         for lydt in layers:
-            layerRev   = lydt[2] if (len(lydt) >= 3) else False
             layerIndex = self.cell.layout().layer(lydt[0], lydt[1])
             mergedReg  = pya.Region()
-            revReg     = pya.Region()
-
             for shape in self.cell.each_shape(layerIndex):
                 if shape.polygon:
                     mergedReg.insert(shape.polygon)
                 else:
                     self.cell.shapes(layerIndex).insert(shape)
                 shape.delete()
-                
-            mergedReg = mergedReg.merged()
-            if layerRev :
-                revReg.insert(self.cell.bbox())
-                mergedReg = (revReg - mergedReg)
-
-            self.cell.shapes(layerIndex).insert(mergedReg)
+            self.cell.shapes(layerIndex).insert(mergedReg.merged())
         return self.cell
-
+    
     def childCellList(self, cell, result = []):
         for cellIndex in cell.each_child_cell():
             child = cell.layout().cell(cellIndex)
@@ -98,8 +89,8 @@ class CellExport(object):
         if replace : self.cellListReplace(replace)
         if flip    : self.flip() 
         if flat    : self.flatten() 
-        if merge   : self.mergeLayers(layers)
-
+        if merge   : self.flatCellMergeLayer(layers)
+            
 
     def saveCell(self, folderPath, fileName, layers = {}, fmt = "GDS2", mapping = False, modified_dbu = False):
         option                    = pya.SaveLayoutOptions()
@@ -107,14 +98,7 @@ class CellExport(object):
         option.no_empty_cells     = True
         option.keep_instances     = False
         option.format             = {"GDS2" : "GDS2", "GDS" : "GDS2", "DXF" : "DXF"}[fmt.upper()]
-        option.dxf_polygon_mode   = 2
-        
-        #dxf_polygon_mode_0 (write POLYLINE entities,         no filling)
-        #dxf_polygon_mode_1 (write LWPOLYLINE entities,       no filling)
-        #dxf_polygon_mode_2 (decompose into SOLID entities, with filling)
-        #dxf_polygon_mode_3 (write HATCH entities,           cannot open)
-        #dxf_polygon_mode_4 (write LINE entities,             no filling)
-        
+        option.dxf_polygon_mode   = 0
         if modified_dbu:
             option.dbu = modified_dbu
         layout                    = self.cell.layout()
@@ -134,7 +118,7 @@ class CellExport(object):
         return f"{fileFullPath}" 
 
         
-    def outputCell(self, layers = {}, prefix = "", suffix = "", date = True, time = True, fmt = "GDS2",
+    def outputCell(self, layers = [], prefix = "", suffix = "", date = True, time = True, fmt = "GDS2",
         mapping = False, flip = False, flat = False, merge = False, replace = False, modified_dbu = False, **kwargs):
         
         mainWindow = pya.Application.instance().main_window()
@@ -152,7 +136,7 @@ class CellExport(object):
         folderPath = f"{path}/output/{prefix}output/"
         attri     = "".join([
             "_LMP" * mapping, "_FLP"    * flip, "_FLT" * flat, 
-            "_MRG"   * (True if merge else False),   "_RPC" * replace
+            "MRG"   * merge,   "_RPC" * replace
         ])
         new_dbu    = f"_{modified_dbu:.0E}" if modified_dbu else ""
         cellName   = self.cell.name
@@ -161,39 +145,22 @@ class CellExport(object):
         self.saveCell(folderPath, fileName, layers = layers, fmt = fmt, mapping = mapping, modified_dbu = modified_dbu)
    
 def exp(*args, **kwargs):
-    cell_param = kwargs["cell"]
-    cv         = pya.Application.instance().main_window().current_view()
-    print(cell_param)
+    cellName = kwargs["cell"]
+    cv       = pya.Application.instance().main_window().current_view()
+    
     if not (cv):
         print (f"No layout avaliable")
         return 
         
     layout = cv.active_cellview().layout().dup()  
-
-    if isinstance(cell_param, str): 
-        #indivldual output
-        cell_name = cell_param
-        cell      = layout.cell(cell_name)
+    cell   = layout.cell(cellName)
     
-        if not(cell):
-            print (f"cell '{cell_name}' not exist")
-            return 
-        CellExport(cell).outputCell(**kwargs)
+    if not(cell):
+        print (f"cell '{cellName}' not exist")
+        return 
+        
+    CellExport(cell).outputCell(**kwargs)
 
-    if isinstance(cell_param, list): 
-        print (f"process in subcell mode")
-        layers           = kwargs.get("layers", False)
-        replace          = kwargs.get("replace", False)
-        master_cell_name = cell_param[  -1]
-        sub_cell_names   = cell_param[0:-1]
-        master_cell      = layout.cell(master_cell_name)
-        master_processer = CellExport(master_cell)
-        master_processer.processCell(layers, replace = replace)
         
-        for cell_name in sub_cell_names:
-            sub_cell = layout.cell(cell_name)
-            
-            CellExport(sub_cell).processCell(layers, merge = layers)
-        
-        master_processer.outputCell(**kwargs)
+    
     

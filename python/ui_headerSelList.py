@@ -47,8 +47,10 @@ class HeaderSelList(pya.QListWidget):
         self.updateValue()
         
         if showOptions :
+            ext      = ".gds_check_confg"
             filename = pya.QFileDialog.getSaveFileName(filter = "*gds_check_confg")
-            filepath = f'{filename}.gds_check_confg'
+            suffix   = ext if filename.endswith(ext) else ""
+            filepath = f'{filename}{suffix}' 
         else:
             dirPath  = os.path.dirname(__file__) 
             filepath = os.path.realpath(os.path.join(dirPath, "setting.pkl"))

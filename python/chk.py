@@ -86,32 +86,32 @@ def gdsFilesSummaryV2(fileFullPathList):
         topCellList  = [layout.cell(i) for i in layout.each_top_cell()]
         checksum     = cksum(fileFullPath)
         result       = {
-            "File name"       : os.path.basename(fileFullPath),
-            "Unit"            : f"{round(layout.dbu, 8)}",
-            "ckSum"           : checksum,
-            "ckSum hash"      : checksum.split(" ")[0],
-            "ckSum size"      : checksum.split(" ")[1],
-            "Top cell count"  : f"{len(topCellList)}",
-            "File size(byte)" : f"{fileStats.st_size:,}",
-            "File size(KB)"   : f"{round(fileStats.st_size/1024.0):,}",
-            "File size(MB)"   : f"{round(fileStats.st_size/1024.0/1024.0):,}",
+            "File name"         : os.path.basename(fileFullPath),
+            "Unit"              : f"{round(layout.dbu, 8)}",
+            "ckSum"             : checksum,
+            "ckSum hash"        : checksum.split(" ")[0],
+            "ckSum size"        : checksum.split(" ")[1],
+            "Top cell count"    : f"{len(topCellList)}",
+            "File size(byte)"   : f"{fileStats.st_size:,}",
+            "File size(KB)"     : f"{round(fileStats.st_size/1024.0):,}",
+            "File size(MB)"     : f"{round(fileStats.st_size/1024.0/1024.0):,}",
 
-            "Layer count"     : f"{len(layout.layer_infos())}",
-            "Layer info"      : "; ".join([f"L({inf.layer},{inf.datatype})" for inf in layout.layer_infos()]),
+            "Layer count"       : f"{len(layout.layer_infos())}",
+            "Layer info"        : "; ".join([f"L({inf.layer},{inf.datatype})" for inf in layout.layer_infos()]),
 
-            "Cell name"       : "",
-            "Cell width"      : "0.0",
-            "Cell height"     : "0.0",
-
-            "Cell XLB"        : "0.0",
-            "Cell YLB"        : "0.0",
-            "Cell XRT"        : "0.0",
-            "Cell YRT"        : "0.0",
-            "Cell LB"         : "(0.0, 0.0)",
-            "Cell RT"         : "(0.0, 0.0)",
-            "Cell window"     : "(0.0, 0.0), (0.0, 0.0)",
-            "Origin"          : "Undefined",
-            "Warning"         : [],
+            "Cell name"         : "",
+            "Cell width"        : "0.0",
+            "Cell height"       : "0.0",
+            "Cell size (W x H)" : "0.0 x 0.0",
+            "Cell XLB"          : "0.0",
+            "Cell YLB"          : "0.0",
+            "Cell XRT"          : "0.0",
+            "Cell YRT"          : "0.0",
+            "Cell LB"           : "(0.0, 0.0)",
+            "Cell RT"           : "(0.0, 0.0)",
+            "Cell window"       : "(0.0, 0.0), (0.0, 0.0)",
+            "Origin"            : "Undefined",
+            "Warning"           : [],
         }
         
         if not(topCellList):
@@ -128,16 +128,17 @@ def gdsFilesSummaryV2(fileFullPathList):
         cellP1x,   cellP1y    = round(cellBox.p1.x,    8), round(cellBox.p1.y,     8)
         cellP2x,   cellP2y    = round(cellBox.p2.x,    8), round(cellBox.p2.y,     8)
 
-        result["Cell name"  ] = cell.name
-        result["Cell width" ] = f"{cellWidth}"
-        result["Cell height"] = f"{cellHeight}"
-        result["Cell XLB"   ] = f"{cellP1x}"
-        result["Cell YLB"   ] = f"{cellP1y}"
-        result["Cell XRT"   ] = f"{cellP2x}"
-        result["Cell YRT"   ] = f"{cellP2y}"
-        result["Cell LB"    ] = f"({cellP1x}, {cellP1y})"
-        result["Cell RT"    ] = f"({cellP2x}, {cellP2y})"
-        result["Cell window"] = f"({cellP1x}, {cellP1y}), ({cellP2x}, {cellP2y})"
+        result["Cell name"        ] = cell.name
+        result["Cell width"       ] = f"{cellWidth}"
+        result["Cell height"      ] = f"{cellHeight}"
+        result["Cell size (W x H)"] = f"{cellWidth} x {cellHeight}"
+        result["Cell XLB"         ] = f"{cellP1x}"
+        result["Cell YLB"         ] = f"{cellP1y}"
+        result["Cell XRT"         ] = f"{cellP2x}"
+        result["Cell YRT"         ] = f"{cellP2y}"
+        result["Cell LB"          ] = f"({cellP1x}, {cellP1y})"
+        result["Cell RT"          ] = f"({cellP2x}, {cellP2y})"
+        result["Cell window"      ] = f"({cellP1x}, {cellP1y}), ({cellP2x}, {cellP2y})"
         
         cellOrigin = "Undefined"
         
